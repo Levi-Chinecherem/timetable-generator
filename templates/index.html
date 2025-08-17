@@ -1,0 +1,127 @@
+<!-- timetable_generator/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>University Timetable Generator - Computer Science</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-6 max-w-4xl">
+        <div class="bg-green-600 text-white p-6 rounded mb-6">
+            <h1 class="text-4xl font-bold">Timetable Generator</h1>
+            <p class="mt-2 text-lg">An advanced system for generating optimized timetables for the Computer Science department. Provide course details, lecturers, and constraints to create a balanced weekly schedule that respects lecturer availability and avoids conflicts.</p>
+        </div>
+        <div class="mb-6">
+            <h2 class="text-2xl font-semibold text-green-600 mb-2">Features</h2>
+            <ul class="list-disc pl-6 text-gray-700">
+                <li>Manual input form for flexible entry</li>
+                <li>CSV/Excel upload with template support</li>
+                <li>Automatic validation of time constraints and durations</li>
+                <li>Optimized scheduling to avoid lecturer overlaps and back-to-back classes</li>
+                <li>Responsive timetable display with animations</li>
+                <li>Styled PDF export for printing or sharing</li>
+            </ul>
+        </div>
+        {% if error %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+            {{ error }}
+        </div>
+        {% endif %}
+        <div class="bg-white shadow-md rounded p-6">
+            <div class="flex mb-4">
+                <button onclick="showTab('manual')" class="flex-1 py-2 px-4 bg-green-500 text-white font-semibold rounded-l hover:bg-green-600 transition duration-300">Manual Entry</button>
+                <button onclick="showTab('upload')" class="flex-1 py-2 px-4 bg-gray-300 text-gray-800 font-semibold rounded-r hover:bg-gray-400 transition duration-300">File Upload</button>
+            </div>
+            <!-- Manual Entry Form -->
+            <div id="manual" class="tab-content">
+                <form method="post" action="/generate">
+                    <input type="hidden" name="input_type" value="manual">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Start Time (e.g., 8:00 AM)</label>
+                            <input name="start_time" type="text" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">End Time (e.g., 4:00 PM)</label>
+                            <input name="end_time" type="text" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Break Start (e.g., 12:00 PM)</label>
+                            <input name="break_start" type="text" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Break End (e.g., 1:00 PM)</label>
+                            <input name="break_end" type="text" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Number of Lecture Periods per Day</label>
+                            <input name="periods_per_day" type="number" min="1" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Min Lecture Duration (hours)</label>
+                            <input name="min_duration" type="number" step="0.1" min="0.5" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Max Lecture Duration (hours)</label>
+                            <input name="max_duration" type="number" step="0.1" min="0.5" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <h2 class="text-xl font-semibold mb-2">Courses</h2>
+                        <p class="text-sm text-gray-600 mb-2">Enter Computer Science courses, optional lecturers, and weekly periods.</p>
+                        <div id="courses" class="space-y-4"></div>
+                        <button type="button" onclick="addCourse()" class="mt-2 bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 hover:scale-105 transition duration-200">Add Course</button>
+                    </div>
+                    <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 hover:scale-105 transition duration-200">Generate Timetable</button>
+                </form>
+            </div>
+            <!-- File Upload Form -->
+            <div id="upload" class="tab-content hidden opacity-0 transition-opacity duration-300">
+                <form method="post" action="/generate" enctype="multipart/form-data">
+                    <input type="hidden" name="input_type" value="upload">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Upload CSV/Excel File</label>
+                        <input name="file" type="file" accept=".csv,.xlsx" class="w-full border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+                    </div>
+                    <p class="mb-4">Download template: <a href="/download_template" class="text-green-500 hover:underline">CSV</a> | <a href="/download_template_excel" class="text-green-500 hover:underline">Excel</a></p>
+                    <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 hover:scale-105 transition duration-200">Generate Timetable</button>
+                </form>
+            </div>
+        </div>
+        <footer class="mt-6 text-center text-gray-500 text-sm">
+            &copy; 2025 University Computer Science Timetable Generator. Powered by FastAPI and TailwindCSS.
+        </footer>
+    </div>
+    <script>
+        function showTab(tab) {
+            const manual = document.getElementById('manual');
+            const upload = document.getElementById('upload');
+            if (tab === 'manual') {
+                manual.classList.remove('hidden');
+                upload.classList.add('hidden');
+                manual.classList.add('opacity-100');
+                upload.classList.remove('opacity-100');
+            } else {
+                upload.classList.remove('hidden');
+                manual.classList.add('hidden');
+                upload.classList.add('opacity-100');
+                manual.classList.remove('opacity-100');
+            }
+        }
+        function addCourse() {
+            const div = document.createElement('div');
+            div.classList.add('grid', 'grid-cols-1', 'md:grid-cols-3', 'gap-4');
+            div.innerHTML = `
+                <input name="course_name[]" placeholder="Course Name" class="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+                <input name="lecturer[]" placeholder="Lecturer (optional)" class="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200">
+                <input name="weekly_periods[]" type="number" min="1" placeholder="Weekly Periods" class="border border-gray-300 p-2 rounded focus:ring-2 focus:ring-green-500 focus:border-transparent transition duration-200" required>
+            `;
+            document.getElementById('courses').appendChild(div);
+        }
+        showTab('manual');
+        addCourse(); // Add one course field by default
+    </script>
+</body>
+</html>

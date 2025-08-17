@@ -1,0 +1,8 @@
+StartTime,EndTime,BreakStart,BreakEnd,PeriodsPerDay,MinDuration,MaxDuration
+8:00 AM,4:00 PM,12:00 PM,1:00 PM,6,1,2
+Course,Lecturer,WeeklyPeriods
+Algorithms,Dr. Knuth,3
+Data Structures,Dr. Cormen,4
+Operating Systems,Prof. Tanenbaum,3
+Database Systems,Dr. Silberschatz,3
+Computer Networks,Prof. Peterson,3

@@ -1,0 +1,10 @@
+# timetable_generator/requirements.txt
+fastapi
+uvicorn
+jinja2
+pandas
+openpyxl
+weasyprint
+python-multipart
+cairocffi  # sometimes needed for weasyprint
+pulp
